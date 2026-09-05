@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广宁县建筑项目场景管理系统</title>
+    <script>
+        window._AMapSecurityConfig = {
+            securityJsCode: 'YOUR_SECURITY_CONFIG'
+        }
+    </script>
+    <script src="https://webapi.amap.com/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f16;
+            --bg-secondary: rgba(10, 18, 30, 0.92);
+            --bg-panel: rgba(13, 22, 38, 0.88);
+            --border-primary: rgba(0, 212, 255, 0.25);
+            --border-glow: rgba(0, 212, 255, 0.5);
+            --text-primary: #e8f4f8;
+            --text-secondary: #8ba3b5;
+            --accent-cyan: #00d4ff;
+            --accent-blue: #0066ff;
+            --accent-gold: #f0a500;
+            --accent-green: #00e5a0;
+            --danger: #ff4757;
+            --panel-width: 430px;
+            --header-height: 72px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* 背景网格纹理 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(6, 12, 22, 0.98) 0%, rgba(6, 12, 22, 0.85) 70%, transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            pointer-events: none;
+        }
+
+        .header > * {
+            pointer-events: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--accent-cyan);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 255, 0.08);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
+        }
+
+        .brand-logo svg {
+            width: 26px;
+            height: 26px;
+            fill: var(--accent-cyan);
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-text p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 2px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* 搜索区域 */
+        .search-area {
+            position: relative;
+            width: 420px;
+        }
+
+        .search-box {
+            width: 100%;
+            height: 44px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 0 48px 0 18px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(12px);
+        }
+
+        .search-box:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .search-box::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-cyan);
+            pointer-events: none;
+        }
+
+        .search-results {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+            display: none;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 14px 18px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .search-result-item .name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .search-result-item .meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            height: 40px;
+            padding: 0 20px;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            color: var(--accent-cyan);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        .btn:hover {
+            background: rgba(0, 212, 255, 0.18);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .btn.active {
+            background: rgba(0, 212, 255, 0.25);
+            border-color: var(--accent-cyan);
+        }
+
+        /* 地图容器 */
+        #map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* 右侧详情面板 */
+        .detail-panel {
+            position: fixed;
+            top: var(--header-height);
+            right: 0;
+            width: var(--panel-width);
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(8, 16, 28, 0.96) 0%, rgba(6, 12, 22, 0.94) 100%);
+            border-left: 1px solid var(--border-primary);
+            z-index: 900;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(20px);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .detail-panel.open {
+            transform: translateX(0);
+        }
+
+        .panel-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+        }
+
+        .panel-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .panel-close:hover {
+            background: rgba(255, 71, 87, 0.15);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .panel-title {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.4;
+            padding-right: 40px;
+            color: #fff;
+        }
+
+        .panel-address {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .panel-address svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--accent-cyan);
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .panel-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .panel-body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .panel-body::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.25);
+            border-radius: 3px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue));
+            border-radius: 2px;
+        }
+
+        /* 数据字段网格 */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .data-card {
+            background: rgba(0, 212, 255, 0.04);
+            border: 1px solid rgba(0, 212, 255, 0.12);
+            border-radius: 10px;
+            padding: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .data-card:hover {
+            background: rgba(0, 212, 255, 0.08);
+            border-color: rgba(0, 212, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .data-card .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .data-card .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .data-card .value.highlight {
+            color: var(--accent-gold);
+        }
+
+        .data-card .value.cyan {
+            color: var(--accent-cyan);
+        }
+
+        .data-card .value.green {
+            color: var(--accent-green);
+        }
+
+        /* 文本区块 */
+        .text-block {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 28px;
+        }
+
+        .text-block p {
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        /* 图片画廊 */
+        .gallery-section {
+            margin-bottom: 28px;
+        }
+
+        .gallery-main {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-main:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .gallery-nav:hover {
+            background: rgba(0, 212, 255, 0.8);
+            border-color: var(--accent-cyan);
+        }
+
+        .gallery-nav.prev {
+            left: 10px;
+        }
+
+        .gallery-nav.next {
+            right: 10px;
+        }
+
+        .gallery-thumbs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .gallery-thumb {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-thumb.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+        }
+
+        .gallery-thumb:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-counter {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #fff;
+        }
+
+        /* 图片占位 */
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 102, 255, 0.05) 100%);
+        }
+
+        .image-placeholder svg {
+            width: 40px;
+            height: 40px;
+            fill: rgba(0, 212, 255, 0.3);
+            margin-bottom: 8px;
+        }
+
+        .image-placeholder span {
+            font-size: 12px;
+        }
+
+        /* 数据看板 */
+        .dashboard {
+            position: fixed;
+            left: 24px;
+            bottom: 24px;
+            width: 520px;
+            max-height: calc(100vh - var(--header-height) - 48px);
+            background: linear-gradient(180deg, rgba(8, 16, 28, 0.95) 0%, rgba(6, 12, 22, 0.92) 100%);
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            z-index: 800;
+            transform: translateY(calc(100% + 40px));
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .dashboard.open {
+            transform: translateY(0);
+        }
+
+        .dashboard-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dashboard-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent-cyan);
+        }
+
+        .dashboard-close {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .dashboard-close:hover {
+            background: rgba(255, 71, 87, 0.15);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .dashboard-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - var(--header-height) - 130px);
+        }
+
+        .dashboard-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .dashboard-body::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.25);
+            border-radius: 3px;
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.12);
+            border-radius: 10px;
+            padding: 14px 10px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-card .number.gold {
+            color: var(--accent-gold);
+        }
+
+        .stat-card .number.green {
+            color: var(--accent-green);
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .town-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .town-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .town-item:hover {
+            background: rgba(0, 212, 255, 0.08);
+            border-color: rgba(0, 212, 255, 0.2);
+        }
+
+        .town-name {
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .town-count {
+            font-size: 12px;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* 地图标记点样式 */
+        .map-marker {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .marker-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.3);
+            animation: pulse 2s ease-out infinite;
+        }
+
+        .marker-pulse::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+            100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+        }
+
+        .marker-thumb {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .marker-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .marker-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+        }
+
+        /* 标记标签 */
+        .marker-label {
+            position: absolute;
+            top: 56px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #fff;
+            white-space: nowrap;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        /* 自定义信息窗体 */
+        .amap-info-window {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* 加载状态 */
+        .loading-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-mask.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(0, 212, 255, 0.1);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        /* 响应式适配 PC 端 */
+        @media (max-width: 1400px) {
+            .dashboard {
+                width: 420px;
+            }
+            .stat-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载遮罩 -->
+    <div class="loading-mask" id="loadingMask">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">系统初始化中...</div>
+    </div>
+
+    <!-- 顶部栏 -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="brand-text">
+                <h1>广宁县建筑项目场景管理系统</h1>
+                <p>Intelligent Scenario Management</p>
+            </div>
+        </div>
+        <div class="search-area">
+            <input type="text" class="search-box" id="searchInput" placeholder="搜索项目名称或地点 / 镇名...">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+        <div class="header-actions">
+            <button class="btn" id="dashboardToggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/>
+                    <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                </svg>
+                数据看板
+            </button>
+            <button class="btn" id="resetViewBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+                重置视角
+            </button>
+        </div>
+    </header>
+
+    <!-- 地图容器 -->
+    <div id="map"></div>
+
+    <!-- 右侧详情面板 -->
+    <aside class="detail-panel" id="detailPanel">
+        <div class="panel-header">
+            <button class="panel-close" id="panelClose">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            <h2 class="panel-title" id="panelTitle">项目标题</h2>
+            <div class="panel-address">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <span id="panelAddress">项目地址</span>
+            </div>
+        </div>
+        <div class="panel-body" id="panelBody">
+            <!-- 动态生成 -->
+        </div>
+    </aside>
+
+    <!-- 数据看板 -->
+    <div class="dashboard" id="dashboard">
+        <div class="dashboard-header">
+            <div class="dashboard-title">镇级项目数据统计</div>
+            <button class="dashboard-close" id="dashboardClose">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="dashboard-body">
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="number" id="totalProjects">0</div>
+                    <div class="label">项目总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number gold" id="totalInvestment">0</div>
+                    <div class="label">总投资(亿元)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number green" id="totalArea">0</div>
+                    <div class="label">总规划面积</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="totalTowns">0</div>
+                    <div class="label">覆盖镇街</div>
+                </div>
+            </div>
+            <div class="chart-container" id="typeChart"></div>
+            <div class="chart-container" id="townChart"></div>
+            <h3 class="section-title" style="margin-top: 10px;">各镇项目分布</h3>
+            <div class="town-list" id="townList"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 模拟项目数据
+        // 实际使用时，将图片路径替换为真实图片资源路径即可
+        // ============================================================
+        const projects = [
+            {
+                id: 1,
+                name: "广宁城南新区综合开发",
+                town: "南街街道",
+                address: "肇庆市广宁县南街街道城南片区",
+                lng: 112.4406,
+                lat: 23.6345,
+                type: "城市综合体",
+                status: "前期勘察",
+                area: 125000,
+                investment: 8.5,
+                target: "打造广宁县城南门户新地标，集商业、住宅、公共服务于一体的综合性城市片区开发项目。",
+                manager: "张建国",
+                startDate: "2025-03",
+                duration: "36个月",
+                description: "项目地处广宁县城南核心地段，交通便利，周边配套完善。规划总建筑面积约12.5万平方米，包含高层住宅、商业街区、社区服务中心及地下停车场。",
+                aerialImages: [
+                    "https://picsum.photos/seed/guangning1/800/500",
+                    "https://picsum.photos/seed/guangning2/800/500",
+                    "https://picsum.photos/seed/guangning3/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/plan1/800/500",
+                    "https://picsum.photos/seed/plan2/800/500",
+                    "https://picsum.photos/seed/plan3/800/500",
+                    "https://picsum.photos/seed/plan4/800/500"
+                ]
+            },
+            {
+                id: 2,
+                name: "江屯镇现代农业产业园",
+                town: "江屯镇",
+                address: "肇庆市广宁县江屯镇中心片区",
+                lng: 112.5800,
+                lat: 23.7200,
+                type: "产业园区",
+                status: "方案设计",
+                area: 86000,
+                investment: 3.2,
+                target: "建设集现代农业种植、农产品加工、冷链物流、科技研发于一体的现代化农业产业园区。",
+                manager: "李红梅",
+                startDate: "2025-06",
+                duration: "24个月",
+                description: "项目依托江屯镇优越的农业资源，规划建设标准化种植大棚、农产品初加工车间、冷链仓储中心及电商服务平台。",
+                aerialImages: [
+                    "https://picsum.photos/seed/jiangtun1/800/500",
+                    "https://picsum.photos/seed/jiangtun2/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/jtplan1/800/500",
+                    "https://picsum.photos/seed/jtplan2/800/500"
+                ]
+            },
+            {
+                id: 3,
+                name: "宾亨镇滨水生态居住区",
+                town: "宾亨镇",
+                address: "肇庆市广宁县宾亨镇绥江沿岸",
+                lng: 112.3500,
+                lat: 23.5800,
+                type: "住宅开发",
+                status: "初步洽谈",
+                area: 68000,
+                investment: 5.8,
+                target: "依托绥江生态资源，打造低密度、高品质的滨水生态居住社区。",
+                manager: "王志强",
+                startDate: "2025-09",
+                duration: "30个月",
+                description: "项目临绥江而建，规划多层洋房、联排别墅及滨江景观带，强调生态宜居理念。",
+                aerialImages: [
+                    "https://picsum.photos/seed/binheng1/800/500",
+                    "https://picsum.photos/seed/binheng2/800/500",
+                    "https://picsum.photos/seed/binheng3/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/bhplan1/800/500",
+                    "https://picsum.photos/seed/bhplan2/800/500"
+                ]
+            },
+            {
+                id: 4,
+                name: "石涧镇文旅康养小镇",
+                town: "石涧镇",
+                address: "肇庆市广宁县石涧镇生态旅游区",
+                lng: 112.4800,
+                lat: 23.7100,
+                type: "文旅康养",
+                status: "前期勘察",
+                area: 210000,
+                investment: 12.6,
+                target: "整合石涧镇山水资源，打造集文化体验、休闲度假、健康养生于一体的特色文旅小镇。",
+                manager: "陈美玲",
+                startDate: "2025-04",
+                duration: "48个月",
+                description: "项目占地约21万平方米，规划建设民宿集群、康养中心、文化展示馆、户外运动基地及生态停车场。",
+                aerialImages: [
+                    "https://picsum.photos/seed/shijian1/800/500",
+                    "https://picsum.photos/seed/shijian2/800/500",
+                    "https://picsum.photos/seed/shijian3/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/sjplan1/800/500",
+                    "https://picsum.photos/seed/sjplan2/800/500",
+                    "https://picsum.photos/seed/sjplan3/800/500",
+                    "https://picsum.photos/seed/sjplan4/800/500"
+                ]
+            },
+            {
+                id: 5,
+                name: "排沙镇工业物流园",
+                town: "排沙镇",
+                address: "肇庆市广宁县排沙镇工业园区",
+                lng: 112.5200,
+                lat: 23.5600,
+                type: "产业园区",
+                status: "方案设计",
+                area: 150000,
+                investment: 6.8,
+                target: "建设服务广宁及周边地区的现代化工业物流集散中心。",
+                manager: "刘建军",
+                startDate: "2025-07",
+                duration: "28个月",
+                description: "项目规划建设标准化仓库、物流配送中心、电商分拣中心及配套办公设施。",
+                aerialImages: [
+                    "https://picsum.photos/seed/paisha1/800/500",
+                    "https://picsum.photos/seed/paisha2/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/psplan1/800/500",
+                    "https://picsum.photos/seed/psplan2/800/500"
+                ]
+            },
+            {
+                id: 6,
+                name: "古水镇竹产业创新基地",
+                town: "古水镇",
+                address: "肇庆市广宁县古水镇竹产业集聚区",
+                lng: 112.3000,
+                lat: 23.6500,
+                type: "产业园区",
+                status: "前期勘察",
+                area: 95000,
+                investment: 4.5,
+                target: "依托广宁竹资源优势，建设竹制品研发、展示、交易综合平台。",
+                manager: "赵明华",
+                startDate: "2025-05",
+                duration: "32个月",
+                description: "项目包含竹制品加工厂房、产品研发实验室、竹文化展示馆及电商直播中心。",
+                aerialImages: [
+                    "https://picsum.photos/seed/gushui1/800/500",
+                    "https://picsum.photos/seed/gushui2/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/gsplan1/800/500",
+                    "https://picsum.photos/seed/gsplan2/800/500"
+                ]
+            },
+            {
+                id: 7,
+                name: "潭布镇红色文化旅游区",
+                town: "潭布镇",
+                address: "肇庆市广宁县潭布镇红色文化遗址区",
+                lng: 112.6200,
+                lat: 23.6800,
+                type: "文旅康养",
+                status: "方案设计",
+                area: 72000,
+                investment: 2.8,
+                target: "保护和活化红色文化资源，打造爱国主义教育及红色旅游示范基地。",
+                manager: "孙丽华",
+                startDate: "2025-08",
+                duration: "22个月",
+                description: "项目包括革命遗址修缮、红色文化展览馆、研学基地及游客服务中心。",
+                aerialImages: [
+                    "https://picsum.photos/seed/tanbu1/800/500",
+                    "https://picsum.photos/seed/tanbu2/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/tbplan1/800/500",
+                    "https://picsum.photos/seed/tbplan2/800/500"
+                ]
+            },
+            {
+                id: 8,
+                name: "坑口镇乡村振兴示范带",
+                town: "坑口镇",
+                address: "肇庆市广宁县坑口镇中心村",
+                lng: 112.3800,
+                lat: 23.7500,
+                type: "乡村振兴",
+                status: "初步洽谈",
+                area: 180000,
+                investment: 7.2,
+                target: "打造广宁县乡村振兴示范样板，带动周边村集体经济增收。",
+                manager: "周海涛",
+                startDate: "2025-10",
+                duration: "36个月",
+                description: "项目涵盖人居环境整治、特色产业培育、乡村旅游设施及公共服务配套建设。",
+                aerialImages: [
+                    "https://picsum.photos/seed/kengkou1/800/500",
+                    "https://picsum.photos/seed/kengkou2/800/500",
+                    "https://picsum.photos/seed/kengkou3/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/kkplan1/800/500",
+                    "https://picsum.photos/seed/kkplan2/800/500"
+                ]
+            },
+            {
+                id: 9,
+                name: "螺岗镇智慧农业示范基地",
+                town: "螺岗镇",
+                address: "肇庆市广宁县螺岗镇农业示范区",
+                lng: 112.5500,
+                lat: 23.8000,
+                type: "产业园区",
+                status: "前期勘察",
+                area: 54000,
+                investment: 1.9,
+                target: "建设数字化、智能化的现代农业种植示范基地。",
+                manager: "吴小燕",
+                startDate: "2025-06",
+                duration: "18个月",
+                description: "项目引入物联网、大数据等技术，建设高标准农田及智慧农业管理系统。",
+                aerialImages: [
+                    "https://picsum.photos/seed/luogang1/800/500",
+                    "https://picsum.photos/seed/luogang2/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/lgplan1/800/500",
+                    "https://picsum.photos/seed/lgplan2/800/500"
+                ]
+            },
+            {
+                id: 10,
+                name: "横山镇绿色建材产业园",
+                town: "横山镇",
+                address: "肇庆市广宁县横山镇建材产业区",
+                lng: 112.4200,
+                lat: 23.5000,
+                type: "产业园区",
+                status: "方案设计",
+                area: 132000,
+                investment: 9.6,
+                target: "打造绿色、环保、智能化的现代建材产业集群。",
+                manager: "郑大伟",
+                startDate: "2025-04",
+                duration: "40个月",
+                description: "项目规划绿色建材生产厂房、研发中心、成品展示区及配套物流设施。",
+                aerialImages: [
+                    "https://picsum.photos/seed/hengshan1/800/500",
+                    "https://picsum.photos/seed/hengshan2/800/500"
+                ],
+                planImages: [
+                    "https://picsum.photos/seed/hsplan1/800/500",
+                    "https://picsum.photos/seed/hsplan2/800/500"
+                ]
+            }
+        ];
+
+        // ============================================================
+        // 全局状态
+        // ============================================================
+        let map = null;
+        let markers = [];
+        let currentProjectId = null;
+        let typeChart = null;
+        let townChart = null;
+
+        // ============================================================
+        // 初始化应用
+        // ============================================================
+        async function initApp() {
+            try {
+                await initMap();
+                renderMarkers();
+                initDashboard();
+                initSearch();
+                initEvents();
+                hideLoading();
+            } catch (error) {
+                console.error('初始化失败:', error);
+                document.querySelector('.loading-text').textContent = '地图加载失败，请检查高德地图 Key 配置';
+            }
+        }
+
+        // ============================================================
+        // 初始化高德地图
+        // ============================================================
+        function initMap() {
+            return new Promise((resolve, reject) => {
+                AMapLoader.load({
+                    key: '3ed9efab30dddbd5767f7e3bba9c6cdf',
+                    version: '2.0',
+                    plugins: ['AMap.Scale', 'AMap.ToolBar', 'AMap.MapType', 'AMap.Geocoder'],
+                    AMapUI: {
+                        version: '1.1',
+                        plugins: []
+                    }
+                }).then((AMap) => {
+                    // 广宁县中心坐标
+                    const guangningCenter = [112.4406, 23.6345];
+
+                    map = new AMap.Map('map', {
+                        zoom: 14,
+                        center: guangningCenter,
+                        viewMode: '3D',
+                        pitch: 45,
+                        rotation: 0,
+                        mapStyle: 'amap://styles/dark',
+                        showBuildingBlock: true,
+                        showLabel: true,
+                        jogEnable: true,
+                        resizeEnable: true
+                    });
+
+                    // 添加卫星图层
+                    const satellite = new AMap.TileLayer.Satellite({
+                        zIndex: 10
+                    });
+                    map.add(satellite);
+
+                    // 添加路网图层（可选，增强三维效果）
+                    const roadNet = new AMap.TileLayer.RoadNet({
+                        zIndex: 11,
+                        opacity: 0.6
+                    });
+                    map.add(roadNet);
+
+                    // 添加比例尺和工具条
+                    map.addControl(new AMap.Scale({
+                        position: 'LB'
+                    }));
+                    map.addControl(new AMap.ToolBar({
+                        position: 'RB',
+                        offset: [20, 80]
+                    }));
+
+                    // 添加地图类型切换
+                    map.addControl(new AMap.MapType({
+                        defaultType: 1,
+                        showRoad: true,
+                        showTraffic: false
+                    }));
+
+                    // 添加3D建筑图层
+                    const buildings = new AMap.Buildings({
+                        zIndex: 130,
+                        merge: false,
+                        sort: false,
+                        zooms: [14, 20]
+                    });
+                    map.add(buildings);
+
+                    resolve();
+                }).catch(reject);
+            });
+        }
+
+        // ============================================================
+        // 渲染地图标记
+        // ============================================================
+        function renderMarkers() {
+            clearMarkers();
+
+            projects.forEach(project => {
+                const markerContent = document.createElement('div');
+                markerContent.className = 'map-marker';
+                markerContent.innerHTML = `
+                    <div class="marker-pulse"></div>
+                    <div class="marker-thumb">
+                        <img src="${project.aerialImages[0]}" alt="${project.name}" onerror="this.style.display='none'">
+                    </div>
+                    <div class="marker-label">${project.name}</div>
+                `;
+
+                const marker = new AMap.Marker({
+                    position: [project.lng, project.lat],
+                    content: markerContent,
+                    offset: new AMap.Pixel(-24, -48),
+                    anchor: 'bottom-center',
+                    extData: project
+                });
+
+                marker.on('click', () => {
+                    openProjectDetail(project);
+                    map.setCenter([project.lng, project.lat]);
+                    map.setZoom(16);
+                });
+
+                marker.on('mouseover', () => {
+                    markerContent.querySelector('.marker-thumb').style.transform = 'scale(1.15)';
+                });
+
+                marker.on('mouseout', () => {
+                    markerContent.querySelector('.marker-thumb').style.transform = 'scale(1)';
+                });
+
+                markers.push(marker);
+                map.add(marker);
+            });
+        }
+
+        function clearMarkers() {
+            markers.forEach(marker => map.remove(marker));
+            markers = [];
+        }
+
+        // ============================================================
+        // 打开项目详情面板
+        // ============================================================
+        function openProjectDetail(project) {
+            currentProjectId = project.id;
+            const panel = document.getElementById('detailPanel');
+            const title = document.getElementById('panelTitle');
+            const address = document.getElementById('panelAddress');
+            const body = document.getElementById('panelBody');
+
+            title.textContent = project.name;
+            address.textContent = project.address;
+
+            body.innerHTML = `
+                <div class="section-title">核心数据</div>
+                <div class="data-grid">
+                    <div class="data-card">
+                        <div class="label">项目类型</div>
+                        <div class="value cyan">${project.type}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">当前状态</div>
+                        <div class="value green">${project.status}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">规划面积</div>
+                        <div class="value">${project.area.toLocaleString()} m²</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">投资总额</div>
+                        <div class="value highlight">${project.investment} 亿元</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">预计开工</div>
+                        <div class="value">${project.startDate}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">建设周期</div>
+                        <div class="value">${project.duration}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">项目负责人</div>
+                        <div class="value">${project.manager}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">所属镇街</div>
+                        <div class="value">${project.town}</div>
+                    </div>
+                </div>
+
+                <div class="section-title">项目目标</div>
+                <div class="text-block">
+                    <p>${project.target}</p>
+                </div>
+
+                <div class="section-title">项目简介</div>
+                <div class="text-block">
+                    <p>${project.description}</p>
+                </div>
+
+                <div class="gallery-section">
+                    <div class="section-title">航拍影像</div>
+                    ${renderGallery('aerial', project.aerialImages)}
+                </div>
+
+                <div class="gallery-section">
+                    <div class="section-title">规划图纸</div>
+                    ${renderGallery('plan', project.planImages)}
+                </div>
+
+                <div class="section-title">其他资料</div>
+                <div class="text-block">
+                    <p>此处预留其他项目资料展示区域，如：土地权属证明、环评报告、会议纪要、进度计划表等。待后续资料补充后可直接扩展。</p>
+                </div>
+            `;
+
+            panel.classList.add('open');
+            initGallery('aerial', project.aerialImages);
+            initGallery('plan', project.planImages);
+        }
+
+        // ============================================================
+        // 渲染图片画廊 HTML
+        // ============================================================
+        function renderGallery(type, images) {
+            if (!images || images.length === 0) {
+                return `
+                    <div class="gallery-main">
+                        <div class="image-placeholder">
+                            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                            <span>暂无图片</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const thumbs = images.map((img, index) => `
+                <div class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}" data-type="${type}">
+                    <img src="${img}" alt="" onerror="this.parentElement.style.display='none'">
+                </div>
+            `).join('');
+
+            return `
+                <div class="gallery-main" id="${type}GalleryMain">
+                    <img src="${images[0]}" alt="" id="${type}GalleryImage" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="image-placeholder" style="display:none; position:absolute; top:0; left:0;">
+                        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                        <span>图片加载失败</span>
+                    </div>
+                    <button class="gallery-nav prev" data-type="${type}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
+                    </button>
+                    <button class="gallery-nav next" data-type="${type}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                    </button>
+                    <div class="gallery-counter" id="${type}GalleryCounter">1 / ${images.length}</div>
+                </div>
+                <div class="gallery-thumbs" id="${type}GalleryThumbs">
+                    ${thumbs}
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // 初始化画廊交互
+        // ============================================================
+        function initGallery(type, images) {
+            if (!images || images.length === 0) return;
+
+            let currentIndex = 0;
+            const mainImage = document.getElementById(`${type}GalleryImage`);
+            const counter = document.getElementById(`${type}GalleryCounter`);
+            const thumbs = document.querySelectorAll(`[data-type="${type}"].gallery-thumb`);
+
+            function updateGallery(index) {
+                currentIndex = index;
+                if (mainImage) {
+                    mainImage.src = images[index];
+                    mainImage.style.display = 'block';
+                }
+                if (counter) {
+                    counter.textContent = `${index + 1} / ${images.length}`;
+                }
+                thumbs.forEach((thumb, i) => {
+                    thumb.classList.toggle('active', i === index);
+                });
+            }
+
+            // 缩略图点击
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    updateGallery(parseInt(thumb.dataset.index));
+                });
+            });
+
+            // 上一张/下一张
+            const prevBtn = document.querySelector(`button.gallery-nav.prev[data-type="${type}"]`);
+            const nextBtn = document.querySelector(`button.gallery-nav.next[data-type="${type}"]`);
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    updateGallery((currentIndex - 1 + images.length) % images.length);
+                });
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    updateGallery((currentIndex + 1) % images.length);
+                });
+            }
+        }
+
+        // ============================================================
+        // 关闭详情面板
+        // ============================================================
+        function closeDetailPanel() {
+            document.getElementById('detailPanel').classList.remove('open');
+            currentProjectId = null;
+        }
+
+        // ============================================================
+        // 初始化搜索功能
+        // ============================================================
+        function initSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim().toLowerCase();
+                if (!query) {
+                    searchResults.classList.remove('active');
+                    return;
+                }
+
+                const results = projects.filter(p =>
+                    p.name.toLowerCase().includes(query) ||
+                    p.town.toLowerCase().includes(query) ||
+                    p.address.toLowerCase().includes(query) ||
+                    p.type.toLowerCase().includes(query)
+                );
+
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div class="search-result-item"><div class="name">未找到匹配项目</div></div>';
+                    searchResults.classList.add('active');
+                    return;
+                }
+
+                searchResults.innerHTML = results.map(p => `
+                    <div class="search-result-item" data-id="${p.id}">
+                        <div class="name">${p.name}</div>
+                        <div class="meta">${p.town} · ${p.type} · ${p.investment}亿元</div>
+                    </div>
+                `).join('');
+
+                searchResults.classList.add('active');
+
+                // 绑定点击事件
+                searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const project = projects.find(p => p.id === parseInt(item.dataset.id));
+                        if (project) {
+                            openProjectDetail(project);
+                            map.setCenter([project.lng, project.lat]);
+                            map.setZoom(16);
+                            searchResults.classList.remove('active');
+                            searchInput.value = '';
+                        }
+                    });
+                });
+            });
+
+            // 点击外部关闭搜索结果
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-area')) {
+                    searchResults.classList.remove('active');
+                }
+            });
+
+            // 回车搜索
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const query = e.target.value.trim().toLowerCase();
+                    const project = projects.find(p =>
+                        p.name.toLowerCase().includes(query) ||
+                        p.town.toLowerCase().includes(query)
+                    );
+                    if (project) {
+                        openProjectDetail(project);
+                        map.setCenter([project.lng, project.lat]);
+                        map.setZoom(16);
+                        searchResults.classList.remove('active');
+                        searchInput.value = '';
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        // 初始化数据看板
+        // ============================================================
+        function initDashboard() {
+            // 按镇聚合数据
+            const townData = {};
+            const typeData = {};
+            let totalInvestment = 0;
+            let totalArea = 0;
+
+            projects.forEach(p => {
+                if (!townData[p.town]) {
+                    townData[p.town] = { count: 0, investment: 0, area: 0 };
+                }
+                townData[p.town].count += 1;
+                townData[p.town].investment += p.investment;
+                townData[p.town].area += p.area;
+
+                if (!typeData[p.type]) {
+                    typeData[p.type] = 0;
+                }
+                typeData[p.type] += 1;
+
+                totalInvestment += p.investment;
+                totalArea += p.area;
+            });
+
+            // 更新统计卡片
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('totalInvestment').textContent = totalInvestment.toFixed(1);
+            document.getElementById('totalArea').textContent = (totalArea / 10000).toFixed(1) + '万';
+            document.getElementById('totalTowns').textContent = Object.keys(townData).length;
+
+            // 渲染镇列表
+            const townList = document.getElementById('townList');
+            const sortedTowns = Object.entries(townData).sort((a, b) => b[1].count - a[1].count);
+            townList.innerHTML = sortedTowns.map(([town, data]) => `
+                <div class="town-item" data-town="${town}">
+                    <span class="town-name">${town}</span>
+                    <span class="town-count">${data.count} 个项目</span>
+                </div>
+            `).join('');
+
+            // 镇列表点击事件
+            townList.querySelectorAll('.town-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const town = item.dataset.town;
+                    const townProjects = projects.filter(p => p.town === town);
+                    if (townProjects.length > 0) {
+                        // 计算该镇所有项目的中心点
+                        const lngSum = townProjects.reduce((sum, p) => sum + p.lng, 0);
+                        const latSum = townProjects.reduce((sum, p) => sum + p.lat, 0);
+                        map.setCenter([lngSum / townProjects.length, latSum / townProjects.length]);
+                        map.setZoom(15);
+                    }
+                });
+            });
+
+            // 初始化项目类型饼图
+            initTypeChart(typeData);
+
+            // 初始化各镇投资额柱状图
+            initTownChart(sortedTowns);
+        }
+
+        // ============================================================
+        // 项目类型分布图
+        // ============================================================
+        function initTypeChart(typeData) {
+            const chartDom = document.getElementById('typeChart');
+            typeChart = echarts.init(chartDom);
+
+            const data = Object.entries(typeData).map(([name, value]) => ({ name, value }));
+            const colors = ['#00d4ff', '#0066ff', '#f0a500', '#00e5a0', '#ff6b6b', '#a855f7'];
+
+            const option = {
+                backgroundColor: 'transparent',
+                title: {
+                    text: '项目类型分布',
+                    left: 'center',
+                    top: 10,
+                    textStyle: {
+                        color: '#e8f4f8',
+                        fontSize: 13,
+                        fontWeight: 600
+                    }
+                },
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(8, 16, 28, 0.95)',
+                    borderColor: 'rgba(0, 212, 255, 0.3)',
+                    textStyle: { color: '#e8f4f8' },
+                    formatter: '{b}: {c}个 ({d}%)'
+                },
+                legend: {
+                    bottom: 10,
+                    textStyle: { color: '#8ba3b5', fontSize: 11 },
+                    itemWidth: 10,
+                    itemHeight: 10
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '65%'],
+                    center: ['50%', '50%'],
+                    data: data,
+                    color: colors,
+                    label: {
+                        color: '#8ba3b5',
+                        fontSize: 11,
+                        formatter: '{b}\n{c}个'
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 20,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 212, 255, 0.5)'
+                        }
+                    }
+                }]
+            };
+
+            typeChart.setOption(option);
+        }
+
+        // ============================================================
+        // 各镇项目统计柱状图
+        // ============================================================
+        function initTownChart(sortedTowns) {
+            const chartDom = document.getElementById('townChart');
+            townChart = echarts.init(chartDom);
+
+            const towns = sortedTowns.map(([town]) => town);
+            const counts = sortedTowns.map(([, data]) => data.count);
+            const investments = sortedTowns.map(([, data]) => data.investment);
+
+            const option = {
+                backgroundColor: 'transparent',
+                title: {
+                    text: '各镇项目数量与投资',
+                    left: 'center',
+                    top: 10,
+                    textStyle: {
+                        color: '#e8f4f8',
+                        fontSize: 13,
+                        fontWeight: 600
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(8, 16, 28, 0.95)',
+                    borderColor: 'rgba(0, 212, 255, 0.3)',
+                    textStyle: { color: '#e8f4f8' },
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    top: 35,
+                    textStyle: { color: '#8ba3b5', fontSize: 11 },
+                    data: ['项目数量', '投资额(亿元)']
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    top: 70,
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: towns,
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                    axisLabel: { color: '#8ba3b5', fontSize: 10, rotate: 30 }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '数量',
+                        nameTextStyle: { color: '#8ba3b5' },
+                        axisLine: { show: false },
+                        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
+                        axisLabel: { color: '#8ba3b5', fontSize: 10 }
+                    },
+                    {
+                        type: 'value',
+                        name: '亿元',
+                        nameTextStyle: { color: '#8ba3b5' },
+                        axisLine: { show: false },
+                        splitLine: { show: false },
+                        axisLabel: { color: '#8ba3b5', fontSize: 10 }
+                    }
+                ],
+                series: [
+                    {
+                        name: '项目数量',
+                        type: 'bar',
+                        data: counts,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#00d4ff' },
+                                { offset: 1, color: '#0066ff' }
+                            ])
+                        },
+                        barWidth: '35%'
+                    },
+                    {
+                        name: '投资额(亿元)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: investments,
+                        smooth: true,
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        lineStyle: { color: '#f0a500', width: 2 },
+                        itemStyle: { color: '#f0a500' },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(240, 165, 0, 0.3)' },
+                                { offset: 1, color: 'rgba(240, 165, 0, 0)' }
+                            ])
+                        }
+                    }
+                ]
+            };
+
+            townChart.setOption(option);
+        }
+
+        // ============================================================
+        // 初始化事件监听
+        // ============================================================
+        function initEvents() {
+            document.getElementById('panelClose').addEventListener('click', closeDetailPanel);
+
+            document.getElementById('dashboardToggle').addEventListener('click', () => {
+                const dashboard = document.getElementById('dashboard');
+                dashboard.classList.toggle('open');
+                document.getElementById('dashboardToggle').classList.toggle('active');
+                if (dashboard.classList.contains('open')) {
+                    setTimeout(() => {
+                        if (typeChart) typeChart.resize();
+                        if (townChart) townChart.resize();
+                    }, 300);
+                }
+            });
+
+            document.getElementById('dashboardClose').addEventListener('click', () => {
+                document.getElementById('dashboard').classList.remove('open');
+                document.getElementById('dashboardToggle').classList.remove('active');
+            });
+
+            document.getElementById('resetViewBtn').addEventListener('click', () => {
+                map.setCenter([112.4406, 23.6345]);
+                map.setZoom(14);
+                map.setPitch(45);
+                closeDetailPanel();
+            });
+
+            // ESC 关闭面板
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeDetailPanel();
+                }
+            });
+
+            // 窗口大小变化时重绘图表
+            window.addEventListener('resize', () => {
+                if (typeChart) typeChart.resize();
+                if (townChart) townChart.resize();
+            });
+        }
+
+        // ============================================================
+        // 隐藏加载遮罩
+        // ============================================================
+        function hideLoading() {
+            const mask = document.getElementById('loadingMask');
+            setTimeout(() => {
+                mask.classList.add('hidden');
+            }, 800);
+        }
+
+        // ============================================================
+        // 启动应用
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
