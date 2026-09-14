@@ -953,266 +953,119 @@
 
     <script>
         // ============================================================
-        // 模拟项目数据
-        // 实际使用时，将图片路径替换为真实图片资源路径即可
+        // 真实项目数据（广宁县古水镇）
+        // 坐标来源：子项目坐标.txt（CGCS2000高斯-克吕格 → WGS84）
+        // 图片来源：project-images/ 目录
         // ============================================================
+        const imgBase = 'project-images';
         const projects = [
             {
                 id: 1,
-                name: "广宁城南新区综合开发",
-                town: "南街街道",
-                address: "肇庆市广宁县南街街道城南片区",
-                lng: 112.4406,
-                lat: 23.6345,
-                type: "城市综合体",
-                status: "前期勘察",
-                area: 125000,
-                investment: 8.5,
-                target: "打造广宁县城南门户新地标，集商业、住宅、公共服务于一体的综合性城市片区开发项目。",
-                manager: "张建国",
-                startDate: "2025-03",
-                duration: "36个月",
-                description: "项目地处广宁县城南核心地段，交通便利，周边配套完善。规划总建筑面积约12.5万平方米，包含高层住宅、商业街区、社区服务中心及地下停车场。",
+                name: "碧水竹海文旅EOD项目-古水河文旅开发一期",
+                town: "古水镇",
+                address: "肇庆市广宁县古水镇古水河沿岸（蒙坑村片区）",
+                lng: 112.345381,
+                lat: 23.730520,
+                type: "文旅康养",
+                status: "建设中",
+                area: 210000,
+                investment: 12.6,
+                target: "依托古水河生态资源和竹海景观，打造集文化体验、休闲度假、生态旅游于一体的文旅EOD开发项目。",
+                manager: "待补充",
+                startDate: "2024-06",
+                duration: "48个月",
+                description: "项目沿古水河布局，包含蒙坑村露营基地、铁索桥景观节点、马骝山观景台等核心建设内容。通过河道整治、岸线修复、景观提升等工程，实现生态保护与文旅开发的有机融合。",
                 aerialImages: [
-                    "https://picsum.photos/seed/guangning1/800/500",
-                    "https://picsum.photos/seed/guangning2/800/500",
-                    "https://picsum.photos/seed/guangning3/800/500"
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/整治前.jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/整治前(1).jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/整治前(2).jpg'
                 ],
                 planImages: [
-                    "https://picsum.photos/seed/plan1/800/500",
-                    "https://picsum.photos/seed/plan2/800/500",
-                    "https://picsum.photos/seed/plan3/800/500",
-                    "https://picsum.photos/seed/plan4/800/500"
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/整治后.jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/整治后(1).jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/整治后(2).jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/整治后(3).jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/铁索桥建设后.jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/铁索桥建设后.png',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/蒙坑铁索桥.jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/铁索桥1.jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/马骝山.jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/马骝山1.jpg',
+                    imgBase + '/碧水竹海文旅EOD项目-古水河文旅开发一期/马骝山2.jpg'
                 ]
             },
             {
                 id: 2,
-                name: "江屯镇现代农业产业园",
-                town: "江屯镇",
-                address: "肇庆市广宁县江屯镇中心片区",
-                lng: 112.5800,
-                lat: 23.7200,
-                type: "产业园区",
-                status: "方案设计",
-                area: 86000,
-                investment: 3.2,
-                target: "建设集现代农业种植、农产品加工、冷链物流、科技研发于一体的现代化农业产业园区。",
-                manager: "李红梅",
-                startDate: "2025-06",
-                duration: "24个月",
-                description: "项目依托江屯镇优越的农业资源，规划建设标准化种植大棚、农产品初加工车间、冷链仓储中心及电商服务平台。",
+                name: "竹子加工厂用地腾退-古水河沿岸及国道G355沿线",
+                town: "古水镇",
+                address: "肇庆市广宁县古水镇古水河沿岸及国道G355沿线",
+                lng: 112.327235,
+                lat: 23.676583,
+                type: "产业整治",
+                status: "建设中",
+                area: 150000,
+                investment: 6.8,
+                target: "对古水河沿岸及国道G355沿线竹子加工厂进行用地腾退、拆旧复绿，提升沿线生态环境和景观品质。",
+                manager: "待补充",
+                startDate: "2024-03",
+                duration: "28个月",
+                description: "项目涉及华兴竹厂、南翔明炜竹厂、尚威永裕竹厂、峡下竹厂、汇力竹厂、浩悦竹厂等多个厂区的拆除、整治和复绿工程。",
                 aerialImages: [
-                    "https://picsum.photos/seed/jiangtun1/800/500",
-                    "https://picsum.photos/seed/jiangtun2/800/500"
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/华兴竹厂（改造前）.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/南翔明炜竹厂拆旧前.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/尚威、永裕竹厂（改造前）.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/峡下清拆前.JPG',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/拆旧前.jpg',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/汇力竹厂（改造前）.png'
                 ],
                 planImages: [
-                    "https://picsum.photos/seed/jtplan1/800/500",
-                    "https://picsum.photos/seed/jtplan2/800/500"
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/华兴竹厂整治后效果图.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/南翔明炜竹厂拆旧后.JPG',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/南翔明炜竹厂整治后效果图.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/尚威、永裕竹厂整治后效果图.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/峡下竹厂复绿后.jpg',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/拆旧后.JPG',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/整治后效果图.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/汇力竹厂整治后效果图.png',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/浩悦清拆后.JPG',
+                    imgBase + '/竹子加工厂用地腾退-古水河沿岸及国道G355沿线/浩悦竹厂整治后效果图.png'
                 ]
             },
             {
                 id: 3,
-                name: "宾亨镇滨水生态居住区",
-                town: "宾亨镇",
-                address: "肇庆市广宁县宾亨镇绥江沿岸",
-                lng: 112.3500,
-                lat: 23.5800,
-                type: "住宅开发",
-                status: "初步洽谈",
-                area: 68000,
-                investment: 5.8,
-                target: "依托绥江生态资源，打造低密度、高品质的滨水生态居住社区。",
-                manager: "王志强",
-                startDate: "2025-09",
-                duration: "30个月",
-                description: "项目临绥江而建，规划多层洋房、联排别墅及滨江景观带，强调生态宜居理念。",
-                aerialImages: [
-                    "https://picsum.photos/seed/binheng1/800/500",
-                    "https://picsum.photos/seed/binheng2/800/500",
-                    "https://picsum.photos/seed/binheng3/800/500"
-                ],
-                planImages: [
-                    "https://picsum.photos/seed/bhplan1/800/500",
-                    "https://picsum.photos/seed/bhplan2/800/500"
-                ]
-            },
-            {
-                id: 4,
-                name: "石涧镇文旅康养小镇",
-                town: "石涧镇",
-                address: "肇庆市广宁县石涧镇生态旅游区",
-                lng: 112.4800,
-                lat: 23.7100,
-                type: "文旅康养",
-                status: "前期勘察",
-                area: 210000,
-                investment: 12.6,
-                target: "整合石涧镇山水资源，打造集文化体验、休闲度假、健康养生于一体的特色文旅小镇。",
-                manager: "陈美玲",
-                startDate: "2025-04",
-                duration: "48个月",
-                description: "项目占地约21万平方米，规划建设民宿集群、康养中心、文化展示馆、户外运动基地及生态停车场。",
-                aerialImages: [
-                    "https://picsum.photos/seed/shijian1/800/500",
-                    "https://picsum.photos/seed/shijian2/800/500",
-                    "https://picsum.photos/seed/shijian3/800/500"
-                ],
-                planImages: [
-                    "https://picsum.photos/seed/sjplan1/800/500",
-                    "https://picsum.photos/seed/sjplan2/800/500",
-                    "https://picsum.photos/seed/sjplan3/800/500",
-                    "https://picsum.photos/seed/sjplan4/800/500"
-                ]
-            },
-            {
-                id: 5,
-                name: "排沙镇工业物流园",
-                town: "排沙镇",
-                address: "肇庆市广宁县排沙镇工业园区",
-                lng: 112.5200,
-                lat: 23.5600,
-                type: "产业园区",
-                status: "方案设计",
-                area: 150000,
-                investment: 6.8,
-                target: "建设服务广宁及周边地区的现代化工业物流集散中心。",
-                manager: "刘建军",
-                startDate: "2025-07",
-                duration: "28个月",
-                description: "项目规划建设标准化仓库、物流配送中心、电商分拣中心及配套办公设施。",
-                aerialImages: [
-                    "https://picsum.photos/seed/paisha1/800/500",
-                    "https://picsum.photos/seed/paisha2/800/500"
-                ],
-                planImages: [
-                    "https://picsum.photos/seed/psplan1/800/500",
-                    "https://picsum.photos/seed/psplan2/800/500"
-                ]
-            },
-            {
-                id: 6,
-                name: "古水镇竹产业创新基地",
+                name: "广宁县古水镇古水社区连石崀顶精品示范村项目",
                 town: "古水镇",
-                address: "肇庆市广宁县古水镇竹产业集聚区",
-                lng: 112.3000,
-                lat: 23.6500,
-                type: "产业园区",
-                status: "前期勘察",
-                area: 95000,
-                investment: 4.5,
-                target: "依托广宁竹资源优势，建设竹制品研发、展示、交易综合平台。",
-                manager: "赵明华",
-                startDate: "2025-05",
-                duration: "32个月",
-                description: "项目包含竹制品加工厂房、产品研发实验室、竹文化展示馆及电商直播中心。",
-                aerialImages: [
-                    "https://picsum.photos/seed/gushui1/800/500",
-                    "https://picsum.photos/seed/gushui2/800/500"
-                ],
-                planImages: [
-                    "https://picsum.photos/seed/gsplan1/800/500",
-                    "https://picsum.photos/seed/gsplan2/800/500"
-                ]
-            },
-            {
-                id: 7,
-                name: "潭布镇红色文化旅游区",
-                town: "潭布镇",
-                address: "肇庆市广宁县潭布镇红色文化遗址区",
-                lng: 112.6200,
-                lat: 23.6800,
-                type: "文旅康养",
-                status: "方案设计",
-                area: 72000,
-                investment: 2.8,
-                target: "保护和活化红色文化资源，打造爱国主义教育及红色旅游示范基地。",
-                manager: "孙丽华",
-                startDate: "2025-08",
-                duration: "22个月",
-                description: "项目包括革命遗址修缮、红色文化展览馆、研学基地及游客服务中心。",
-                aerialImages: [
-                    "https://picsum.photos/seed/tanbu1/800/500",
-                    "https://picsum.photos/seed/tanbu2/800/500"
-                ],
-                planImages: [
-                    "https://picsum.photos/seed/tbplan1/800/500",
-                    "https://picsum.photos/seed/tbplan2/800/500"
-                ]
-            },
-            {
-                id: 8,
-                name: "坑口镇乡村振兴示范带",
-                town: "坑口镇",
-                address: "肇庆市广宁县坑口镇中心村",
-                lng: 112.3800,
-                lat: 23.7500,
+                address: "肇庆市广宁县古水镇古水社区连石崀顶",
+                lng: 112.317338,
+                lat: 23.688675,
                 type: "乡村振兴",
-                status: "初步洽谈",
+                status: "建设中",
                 area: 180000,
                 investment: 7.2,
-                target: "打造广宁县乡村振兴示范样板，带动周边村集体经济增收。",
-                manager: "周海涛",
-                startDate: "2025-10",
+                target: "打造广宁县乡村振兴精品示范村，提升人居环境品质，建设宜居宜业宜游的美丽乡村。",
+                manager: "待补充",
+                startDate: "2024-05",
                 duration: "36个月",
-                description: "项目涵盖人居环境整治、特色产业培育、乡村旅游设施及公共服务配套建设。",
+                description: "项目涵盖村庄人居环境整治、基础设施建设、公共服务配套、特色产业发展及村容村貌提升等建设内容。",
                 aerialImages: [
-                    "https://picsum.photos/seed/kengkou1/800/500",
-                    "https://picsum.photos/seed/kengkou2/800/500",
-                    "https://picsum.photos/seed/kengkou3/800/500"
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设前.jpg'
                 ],
                 planImages: [
-                    "https://picsum.photos/seed/kkplan1/800/500",
-                    "https://picsum.photos/seed/kkplan2/800/500"
-                ]
-            },
-            {
-                id: 9,
-                name: "螺岗镇智慧农业示范基地",
-                town: "螺岗镇",
-                address: "肇庆市广宁县螺岗镇农业示范区",
-                lng: 112.5500,
-                lat: 23.8000,
-                type: "产业园区",
-                status: "前期勘察",
-                area: 54000,
-                investment: 1.9,
-                target: "建设数字化、智能化的现代农业种植示范基地。",
-                manager: "吴小燕",
-                startDate: "2025-06",
-                duration: "18个月",
-                description: "项目引入物联网、大数据等技术，建设高标准农田及智慧农业管理系统。",
-                aerialImages: [
-                    "https://picsum.photos/seed/luogang1/800/500",
-                    "https://picsum.photos/seed/luogang2/800/500"
-                ],
-                planImages: [
-                    "https://picsum.photos/seed/lgplan1/800/500",
-                    "https://picsum.photos/seed/lgplan2/800/500"
-                ]
-            },
-            {
-                id: 10,
-                name: "横山镇绿色建材产业园",
-                town: "横山镇",
-                address: "肇庆市广宁县横山镇建材产业区",
-                lng: 112.4200,
-                lat: 23.5000,
-                type: "产业园区",
-                status: "方案设计",
-                area: 132000,
-                investment: 9.6,
-                target: "打造绿色、环保、智能化的现代建材产业集群。",
-                manager: "郑大伟",
-                startDate: "2025-04",
-                duration: "40个月",
-                description: "项目规划绿色建材生产厂房、研发中心、成品展示区及配套物流设施。",
-                aerialImages: [
-                    "https://picsum.photos/seed/hengshan1/800/500",
-                    "https://picsum.photos/seed/hengshan2/800/500"
-                ],
-                planImages: [
-                    "https://picsum.photos/seed/hsplan1/800/500",
-                    "https://picsum.photos/seed/hsplan2/800/500"
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (1)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (2)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (3)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (4)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (5)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (6)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (7)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (8)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (9)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (10)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (11)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (12)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (13)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (14)-300ppi.jpg',
+                    imgBase + '/广宁县古水镇古水社区连石崀顶精品示范村项目/建设后 (15)-300ppi.jpg'
                 ]
             }
         ];
@@ -1258,10 +1111,10 @@
                     }
                 }).then((AMap) => {
                     // 广宁县中心坐标
-                    const guangningCenter = [112.4406, 23.6345];
+                    const guangningCenter = [112.330, 23.699];
 
                     map = new AMap.Map('map', {
-                        zoom: 14,
+                        zoom: 13,
                         center: guangningCenter,
                         viewMode: '3D',
                         pitch: 45,
@@ -1426,12 +1279,12 @@
                 </div>
 
                 <div class="gallery-section">
-                    <div class="section-title">航拍影像</div>
+                    <div class="section-title">整治前照片</div>
                     ${renderGallery('aerial', project.aerialImages)}
                 </div>
 
                 <div class="gallery-section">
-                    <div class="section-title">规划图纸</div>
+                    <div class="section-title">整治后照片及效果图</div>
                     ${renderGallery('plan', project.planImages)}
                 </div>
 
@@ -1875,7 +1728,7 @@
             });
 
             document.getElementById('resetViewBtn').addEventListener('click', () => {
-                map.setCenter([112.4406, 23.6345]);
+                map.setCenter([112.330, 23.699]);
                 map.setZoom(14);
                 map.setPitch(45);
                 closeDetailPanel();
