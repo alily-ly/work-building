@@ -1546,11 +1546,11 @@
                         plugins: []
                     }
                 }).then((AMap) => {
-                    // 广宁县中心坐标
-                    const guangningCenter = [112.330, 23.699];
+                    // 古水镇项目集中区域中心
+                    const guangningCenter = [112.332, 23.695];
 
                     map = new AMap.Map('map', {
-                        zoom: 13,
+                        zoom: 15,
                         center: guangningCenter,
                         viewMode: '3D',
                         pitch: 45,
@@ -1631,12 +1631,12 @@
                     path: boundary.map(p => new AMap.LngLat(p[0], p[1])),
                     fillColor: color.fill,
                     strokeColor: color.stroke,
-                    strokeWeight: 2,
-                    strokeOpacity: 0.9,
-                    fillOpacity: 0.6,
+                    strokeWeight: 3,
+                    strokeOpacity: 1.0,
+                    fillOpacity: 0.4,
                     strokeStyle: 'solid',
                     cursor: 'pointer',
-                    zindex: 50
+                    zIndex: 50
                 });
 
                 polygon.on('click', () => {
@@ -2305,8 +2305,8 @@
             });
 
             document.getElementById('resetViewBtn').addEventListener('click', () => {
-                map.setCenter([112.330, 23.699]);
-                map.setZoom(13);
+                map.setCenter([112.332, 23.695]);
+                map.setZoom(15);
                 map.setPitch(45);
                 closeDetailPanel();
             });
