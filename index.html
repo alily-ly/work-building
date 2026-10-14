@@ -2230,7 +2230,11 @@
         function hideLoading() {
             const mask = document.getElementById('loadingMask');
             if (!mask) return;
-            setTimeout(() => { mask.classList.add('hidden'); }, 800);
+            // Force remove after short delay
+            setTimeout(() => {
+                mask.classList.add('hidden');
+                setTimeout(() => { mask.remove(); }, 500);
+            }, 300);
         }
 
         // ============================================================
