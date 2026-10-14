@@ -1852,11 +1852,11 @@
                         resizeEnable: true
                     });
 
-                    const satellite = new AMap.TileLayer.Satellite({ zIndex: 10 });
-                    map.add(satellite);
-
-                    const roadNet = new AMap.TileLayer.RoadNet({ zIndex: 11, opacity: 0.6 });
-                    map.add(roadNet);
+                    // Tile layers disabled for debugging
+                    // const satellite = new AMap.TileLayer.Satellite({ zIndex: 10 });
+                    // map.add(satellite);
+                    // const roadNet = new AMap.TileLayer.RoadNet({ zIndex: 11, opacity: 0.6 });
+                    // map.add(roadNet);
 
                     map.addControl(new AMap.Scale({ position: 'LB' }));
                     map.addControl(new AMap.ToolBar({ position: 'RB', offset: [20, 80] }));
