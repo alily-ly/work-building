@@ -1831,7 +1831,7 @@
                 AMapLoader.load({
                     key: '3ed9efab30dddbd5767f7e3bba9c6cdf',
                     version: '2.0',
-                    plugins: ['AMap.Scale', 'AMap.ToolBar', 'AMap.MapType', 'AMap.Geocoder', 'AMap.InfoWindow', 'AMap.Buildings'],
+                    plugins: ['AMap.Scale', 'AMap.ToolBar', 'AMap.MapType', 'AMap.Geocoder', 'AMap.InfoWindow'],
                     AMapUI: {
                         version: '1.1',
                         plugins: []
@@ -1852,11 +1852,14 @@
                         resizeEnable: true
                     });
 
-                    // Tile layers disabled for debugging
-                    // const satellite = new AMap.TileLayer.Satellite({ zIndex: 10 });
-                    // map.add(satellite);
-                    // const roadNet = new AMap.TileLayer.RoadNet({ zIndex: 11, opacity: 0.6 });
-                    // map.add(roadNet);
+                    try {
+                        const satellite = new AMap.TileLayer.Satellite({ zIndex: 10 });
+                        map.add(satellite);
+                    } catch(e) { console.warn('Satellite layer failed:', e); }
+                    try {
+                        const roadNet = new AMap.TileLayer.RoadNet({ zIndex: 11, opacity: 0.6 });
+                        map.add(roadNet);
+                    } catch(e) { console.warn('RoadNet layer failed:', e); }
 
                     map.addControl(new AMap.Scale({ position: 'LB' }));
                     map.addControl(new AMap.ToolBar({ position: 'RB', offset: [20, 80] }));
