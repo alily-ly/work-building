@@ -1862,10 +1862,7 @@
                     map.addControl(new AMap.ToolBar({ position: 'RB', offset: [20, 80] }));
                     map.addControl(new AMap.MapType({ defaultType: 1, showRoad: true, showTraffic: false }));
 
-                    const buildings = new AMap.Buildings({
-                        zIndex: 130, merge: false, sort: false, zooms: [14, 20]
-                    });
-                    map.add(buildings);
+                    // Buildings disabled (plugin issue)
 
                     resolve();
                 }).catch(reject);
