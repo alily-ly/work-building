@@ -1871,28 +1871,19 @@
 
         async function initApp() {
             try {
-                console.log('[initApp] Step 1: await initMap...');
-                await initMap();
-                console.log('[initApp] Step 2: buildFenceGroups...');
-
+                                await initMap();
+                
                 const { groups, nameList, nameColors } = buildFenceGroups();
                 globalNameColors = nameColors;
-                console.log('[initApp] Step 3: groups built,', Object.keys(groups).length, 'names');
-
+                
                 renderFences(groups, nameColors);
-                console.log('[initApp] Step 4: renderFences done');
-                renderProjectFilter(nameList, groups, nameColors);
-                console.log('[initApp] Step 5: renderProjectFilter done');
-
+                                renderProjectFilter(nameList, groups, nameColors);
+                
                 initDashboard(groups, nameList, nameColors);
-                console.log('[initApp] Step 6: initDashboard done');
-                initSearch(groups);
-                console.log('[initApp] Step 7: initSearch done');
-                initEvents();
-                console.log('[initApp] Step 8: initEvents done');
-                hideLoading();
-                console.log('[initApp] All done!');
-
+                                initSearch(groups);
+                                initEvents();
+                                hideLoading();
+                
                 // 移动端视野变化重绘
                 if (window.innerWidth <= 768) {
                     setupMobileViewRefresh(groups, nameColors);
