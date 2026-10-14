@@ -1901,8 +1901,8 @@
                     setupMobileViewRefresh(groups, nameColors);
                 }
             } catch (error) {
-                console.error('初始化失败:', error, 'stack:', error && error.stack, 'name:', error && error.name);
-                console.error('error keys:', Object.keys(error || {}));
+                const errMsg = error && error.message ? error.message : (typeof error === 'string' ? error : JSON.stringify(error));
+                console.error('初始化失败:', errMsg, error);
                 const lt = document.querySelector('.loading-text');
                 if (lt) lt.textContent = '地图加载失败，请检查高德地图 Key 配置';
             }
