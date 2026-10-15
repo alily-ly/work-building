@@ -699,6 +699,11 @@
             border-color: rgba(0, 212, 255, 0.2);
         }
 
+        .town-item.active {
+            background: rgba(0, 212, 255, 0.14);
+            border-color: rgba(0, 212, 255, 0.45);
+        }
+
         .town-name {
             font-size: 13px;
             color: var(--text-primary);
@@ -1573,7 +1578,7 @@
     <!-- 数据看板 -->
     <div class="dashboard" id="dashboard">
         <div class="dashboard-header">
-            <div class="dashboard-title">全域土地综合整治项目数据统计</div>
+            <div class="dashboard-title">镇级项目数据统计</div>
             <button class="dashboard-close" id="dashboardClose">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 6 6 18M6 6l12 12"/>
@@ -1628,6 +1633,7 @@
         let fenceInfoWindow = null;  // 用于地块点击的 InfoWindow
         let currentProjectId = null;
         let typeChart = null;
+        let townChart = null;
 
         // ============================================================
         // 17 种项目颜色（深色科技风）
@@ -1655,6 +1661,191 @@
                 nameColors[name] = NAME_COLORS[i % NAME_COLORS.length];
             });
             return { groups, nameList, nameColors };
+        }
+
+        // ============================================================
+        // 项目元数据：项目名 → 镇街 / 地址 / 整治前后图片
+        // （当前数据全部位于古水镇；仅 3 个项目附带实景图片）
+        // ============================================================
+        const imgBase = 'project-images';
+        const TOWN_DEFAULT = '古水镇';
+        let allGroups = {}; // 由 initApp 注入
+
+        const PROJECT_META = {
+            '“碧水-竹海-文旅”EOD项目-古水河文旅开发一期': {
+                town: '古水镇',
+                address: '肇庆市广宁县古水镇古水河沿岸（蒙坑村片区）',
+                folder: '碧水竹海文旅EOD项目-古水河文旅开发一期',
+                before: ['整治前.jpg', '整治前(1).jpg', '整治前(2).jpg'],
+                after: ['整治后.jpg', '整治后(1).jpg', '整治后(2).jpg', '整治后(3).jpg',
+                        '铁索桥建设后.jpg', '蒙坑铁索桥.jpg', '铁索桥1.jpg',
+                        '马骝山.jpg', '马骝山1.jpg', '马骝山2.jpg']
+            },
+            '竹子加工厂用地腾退（古水河沿岸及国道G355沿线）': {
+                town: '古水镇',
+                address: '肇庆市广宁县古水镇古水河沿岸及国道G355沿线',
+                folder: '竹子加工厂用地腾退-古水河沿岸及国道G355沿线',
+                before: ['华兴竹厂（改造前）.jpg', '南翔明炜竹厂拆旧前.jpg', '尚威、永裕竹厂（改造前）.jpg',
+                         '峡下清拆前.jpg', '拆旧前.jpg', '汇力竹厂（改造前）.jpg'],
+                after: ['华兴竹厂整治后效果图.jpg', '南翔明炜竹厂拆旧后.jpg', '南翔明炜竹厂整治后效果图.jpg',
+                        '尚威、永裕竹厂整治后效果图.jpg', '峡下竹厂复绿后.jpg', '拆旧后.jpg',
+                        '整治后效果图.jpg', '汇力竹厂整治后效果图.jpg', '浩悦清拆后.jpg',
+                        '浩悦竹厂整治后效果图.jpg']
+            },
+            '广宁县古水镇古水社区连石崀顶精品示范村项目': {
+                town: '古水镇',
+                address: '肇庆市广宁县古水镇古水社区连石崀顶',
+                folder: '广宁县古水镇古水社区连石崀顶精品示范村项目',
+                before: ['建设前.jpg'],
+                after: ['建设后 (1)-300ppi.jpg', '建设后 (2)-300ppi.jpg', '建设后 (3)-300ppi.jpg',
+                        '建设后 (4)-300ppi.jpg', '建设后 (5)-300ppi.jpg', '建设后 (6)-300ppi.jpg',
+                        '建设后 (7)-300ppi.jpg', '建设后 (8)-300ppi.jpg', '建设后 (9)-300ppi.jpg',
+                        '建设后 (10)-300ppi.jpg', '建设后 (11)-300ppi.jpg', '建设后 (12)-300ppi.jpg',
+                        '建设后 (13)-300ppi.jpg', '建设后 (14)-300ppi.jpg', '建设后 (15)-300ppi.jpg']
+            }
+        };
+
+        function projectMeta(name) {
+            return PROJECT_META[name] || { town: TOWN_DEFAULT, address: '肇庆市广宁县古水镇' };
+        }
+
+        // ============================================================
+        // 打开右侧详情面板（数据 + 图片画廊）
+        // ============================================================
+        function openProjectDetail(name) {
+            const meta = projectMeta(name);
+            const fences = (allGroups && allGroups[name]) ? allGroups[name] : [];
+            const totalArea = fences.reduce((s, f) => s + (f.area_m2 || 0), 0);
+
+            const panel = document.getElementById('detailPanel');
+            if (!panel) return;
+
+            document.getElementById('panelTitle').textContent = name;
+            document.getElementById('panelAddress').textContent = meta.address;
+
+            const areaDisplay = totalArea >= 1000000
+                ? `${(totalArea / 1000000).toFixed(2)} km² / ${(totalArea / 666.67).toFixed(1)} 亩`
+                : `${Math.round(totalArea).toLocaleString()} m² / ${(totalArea / 666.67).toFixed(1)} 亩`;
+
+            const before = (meta.before || []).map(f => `${imgBase}/${meta.folder}/${f}`);
+            const after = (meta.after || []).map(f => `${imgBase}/${meta.folder}/${f}`);
+
+            document.getElementById('panelBody').innerHTML = `
+                <div class="section-title">核心数据</div>
+                <div class="data-grid">
+                    <div class="data-card">
+                        <div class="label">所属镇街</div>
+                        <div class="value cyan">${meta.town}</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">地块数量</div>
+                        <div class="value">${fences.length} 块</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="label">项目面积</div>
+                        <div class="value highlight">${areaDisplay}</div>
+                    </div>
+                </div>
+
+                <div class="gallery-section">
+                    <div class="section-title">整治前照片</div>
+                    ${renderGallery('aerial', before)}
+                </div>
+
+                <div class="gallery-section">
+                    <div class="section-title">整治后照片及效果图</div>
+                    ${renderGallery('plan', after)}
+                </div>
+            `;
+
+            panel.classList.add('open');
+            initGallery('aerial', before);
+            initGallery('plan', after);
+        }
+
+        // ============================================================
+        // 渲染图片画廊 HTML
+        // ============================================================
+        function renderGallery(type, images) {
+            if (!images || images.length === 0) {
+                return `
+                    <div class="gallery-main">
+                        <div class="image-placeholder">
+                            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                            <span>暂无图片</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const thumbs = images.map((img, index) => `
+                <div class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}" data-type="${type}">
+                    <img src="${img}" alt="" class="thumb-img" loading="lazy" onerror="this.parentElement.style.display='none'">
+                </div>
+            `).join('');
+
+            return `
+                <div class="gallery-main" id="${type}GalleryMain">
+                    <img src="${images[0]}" alt="" id="${type}GalleryImage" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="image-placeholder" style="display:none; position:absolute; top:0; left:0;">
+                        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                        <span>图片加载失败</span>
+                    </div>
+                    <button class="gallery-nav prev" data-type="${type}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
+                    </button>
+                    <button class="gallery-nav next" data-type="${type}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                    </button>
+                    <div class="gallery-counter" id="${type}GalleryCounter">1 / ${images.length}</div>
+                </div>
+                <div class="gallery-thumbs" id="${type}GalleryThumbs">
+                    ${thumbs}
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // 初始化画廊交互
+        // ============================================================
+        function initGallery(type, images) {
+            if (!images || images.length === 0) return;
+
+            let currentIndex = 0;
+            const mainImage = document.getElementById(`${type}GalleryImage`);
+            const counter = document.getElementById(`${type}GalleryCounter`);
+            const thumbs = document.querySelectorAll(`[data-type="${type}"].gallery-thumb`);
+
+            function updateGallery(index) {
+                currentIndex = index;
+                if (mainImage) {
+                    mainImage.src = images[index];
+                    mainImage.style.display = 'block';
+                }
+                if (counter) counter.textContent = `${index + 1} / ${images.length}`;
+                thumbs.forEach((thumb, i) => thumb.classList.toggle('active', i === index));
+            }
+
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', () => updateGallery(parseInt(thumb.dataset.index)));
+            });
+
+            const prevBtn = document.querySelector(`button.gallery-nav.prev[data-type="${type}"]`);
+            const nextBtn = document.querySelector(`button.gallery-nav.next[data-type="${type}"]`);
+            if (prevBtn) prevBtn.addEventListener('click', () => updateGallery((currentIndex - 1 + images.length) % images.length));
+            if (nextBtn) nextBtn.addEventListener('click', () => updateGallery((currentIndex + 1) % images.length));
+
+            if (mainImage) {
+                mainImage.style.cursor = 'zoom-in';
+                mainImage.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openLightbox(images, currentIndex);
+                });
+            }
         }
 
         // 面积格式化
@@ -1835,6 +2026,9 @@
 
             fenceInfoWindow.setContent(content);
             fenceInfoWindow.open(map, fence.center);
+
+            // 同步打开右侧详情面板（含项目图片）
+            openProjectDetail(fence.name);
         }
 
         // ============================================================
@@ -1895,6 +2089,8 @@
                     }
                     container.querySelectorAll('.filter-item').forEach(el => el.classList.remove('focused'));
                     item.classList.add('focused');
+                    // 打开右侧详情面板
+                    openProjectDetail(name);
                 });
             });
         }
@@ -1981,6 +2177,7 @@
                 
                 const { groups, nameList, nameColors } = buildFenceGroups();
                 globalNameColors = nameColors;
+                allGroups = groups;
                 
                 renderFences(groups, nameColors);
                                 renderProjectFilter(nameList, groups, nameColors);
@@ -2020,31 +2217,118 @@
                 nameStats.push({ name, cnt, area, color: nameColors[name] });
             });
 
+            // 按镇街聚合（当前数据全部位于古水镇）
+            const townData = {};
+            nameList.forEach(name => {
+                const town = projectMeta(name).town;
+                const area = groups[name].reduce((s, f) => s + f.area_m2, 0);
+                if (!townData[town]) townData[town] = { count: 0, area: 0, types: 0 };
+                townData[town].count += groups[name].length;
+                townData[town].area += area;
+                townData[town].types += 1;
+            });
+            const townNames = Object.keys(townData);
+
             // 更新统计卡片
             document.getElementById('totalProjects').textContent = totalCount;
             document.getElementById('totalInvestment').textContent = nameList.length; // 显示项目种类数
             document.getElementById('totalArea').textContent = (totalArea / 666.67 / 10000).toFixed(2) + '万亩';
-            document.getElementById('totalTowns').textContent = 1;
+            document.getElementById('totalTowns').textContent = townNames.length;
 
-            // 隐藏旧的镇列表（只有古水镇一个），但保留区域
+            // 各镇项目分布列表（可点击定位）
             const townList = document.getElementById('townList');
             if (townList) {
-                townList.innerHTML = `<div class="town-item"><span class="town-name">古水镇（全域）</span><span class="town-count">${totalCount} 个地块 · ${(totalArea/666.67/10000).toFixed(2)} 万亩</span></div>`;
+                const sortedTowns = Object.entries(townData).sort((a, b) => b[1].area - a[1].area);
+                townList.innerHTML = sortedTowns.map(([town, d]) => `
+                    <div class="town-item" data-town="${town}">
+                        <span class="town-name">${town}</span>
+                        <span class="town-count">${d.count} 个地块 · ${d.types} 类项目 · ${(d.area/666.67/10000).toFixed(2)} 万亩</span>
+                    </div>`).join('');
+
+                townList.querySelectorAll('.town-item').forEach(item => {
+                    item.style.cursor = 'pointer';
+                    item.addEventListener('click', () => {
+                        const town = item.dataset.town;
+                        const polys = nameList
+                            .filter(n => projectMeta(n).town === town)
+                            .flatMap(n => polygonsByName[n] || []);
+                        if (polys.length) {
+                            try { map.setFitView(polys, false, [90, 90, 90, 90]); } catch (e) {}
+                        }
+                        townList.querySelectorAll('.town-item').forEach(el => el.classList.remove('active'));
+                        item.classList.add('active');
+                    });
+                });
             }
 
             // 项目名称分类饼图
             initNamePieChart(nameStats);
+            // 各镇项目面积柱状图
+            initTownBarChart(townData);
+        }
+
+        // ============================================================
+        // 各镇项目面积柱状图
+        // ============================================================
+        function initTownBarChart(townData) {
+            if (!window.echarts) return;
+            const dom = document.getElementById('townChart');
+            if (!dom) return;
+            dom.style.display = '';
+            if (townChart) townChart.dispose();
+            townChart = echarts.init(dom);
+
+            const entries = Object.entries(townData).sort((a, b) => b[1].area - a[1].area);
+            townChart.setOption({
+                backgroundColor: 'transparent',
+                title: {
+                    text: '各镇项目面积分布',
+                    left: 'center', top: 8,
+                    textStyle: { color: '#e8f4f8', fontSize: 13, fontWeight: 600 }
+                },
+                grid: { left: 64, right: 24, top: 44, bottom: 28 },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(8, 16, 28, 0.95)',
+                    borderColor: 'rgba(0, 212, 255, 0.3)',
+                    textStyle: { color: '#e8f4f8', fontSize: 12 },
+                    formatter: (ps) => {
+                        const e = entries[ps[0].dataIndex];
+                        return `<b>${e[0]}</b><br/>地块数：${e[1].count}<br/>项目种类：${e[1].types}<br/>面积：${(e[1].area/666.67/10000).toFixed(2)} 万亩`;
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: entries.map(e => e[0]),
+                    axisLabel: { color: '#8ba3b5', fontSize: 11 },
+                    axisLine: { lineStyle: { color: 'rgba(0, 212, 255, 0.25)' } }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#8ba3b5', fontSize: 10 },
+                    splitLine: { lineStyle: { color: 'rgba(0, 212, 255, 0.08)' } }
+                },
+                series: [{
+                    type: 'bar',
+                    data: entries.map(e => +(e[1].area / 666.67).toFixed(1)),
+                    barWidth: '38%',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#00d4ff' },
+                            { offset: 1, color: '#00ff88' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    label: { show: true, position: 'top', color: '#8ba3b5', fontSize: 10, formatter: '{c} 亩' }
+                }]
+            });
         }
 
         // ============================================================
         // 项目名称分布饼图（替代旧的 typeChart 和 townChart）
         // ============================================================
         function initNamePieChart(nameStats) {
-            // 只保留 typeChart 的 id，隐藏 townChart
             const typeChartDom = document.getElementById('typeChart');
-            const townChartDom = document.getElementById('townChart');
-            if (townChartDom) townChartDom.style.display = 'none';
-
             if (!window.echarts) return;
             typeChart = echarts.init(typeChartDom);
 
@@ -2242,6 +2526,7 @@
                 if (dashboard.classList.contains('open')) {
                     setTimeout(() => {
                         if (typeChart) typeChart.resize();
+                        if (townChart) townChart.resize();
                     }, 300);
                 }
             });
@@ -2250,6 +2535,9 @@
                 document.getElementById('dashboard').classList.remove('open');
                 document.getElementById('dashboardToggle').classList.remove('active');
             });
+
+            const panelCloseBtn = document.getElementById('panelClose');
+            if (panelCloseBtn) panelCloseBtn.addEventListener('click', closeDetailPanel);
 
             document.getElementById('resetViewBtn').addEventListener('click', () => {
                 map.setCenter([112.332, 23.695]);
@@ -2261,6 +2549,7 @@
             // 窗口大小变化
             window.addEventListener('resize', () => {
                 if (typeChart) typeChart.resize();
+                if (townChart) townChart.resize();
             });
         }
 
@@ -2356,7 +2645,7 @@
 
     <!-- 图片大图查看器 -->
     <div class="image-lightbox" id="imageLightbox">
-        <div class="lightbox-close" id="lightboxClose">&#times;</div>
+        <div class="lightbox-close" id="lightboxClose">&times;</div>
         <button class="lightbox-nav prev" id="lightboxPrev">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="m15 18-6-6 6-6"/>
