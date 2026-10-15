@@ -1382,6 +1382,15 @@
             background: rgba(0, 212, 255, 0.1);
             border-color: rgba(0, 212, 255, 0.3);
         }
+        .filter-item.focused {
+            background: rgba(0, 212, 255, 0.16);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.35), inset 0 0 8px rgba(0, 212, 255, 0.12);
+        }
+        .filter-name:hover {
+            color: var(--accent-cyan);
+            text-decoration: underline;
+        }
         .filter-item input[type="checkbox"] {
             appearance: none;
             -webkit-appearance: none;
@@ -1659,20 +1668,82 @@
         // ============================================================
         // 渲染所有围栏 Polygon
         // ============================================================
+        // 超过 500 亩视为"大范围"：只描边不填充，避免遮挡其他项目
+        const LARGE_AREA_M2 = 500 * 666.67;
+        // 聚焦状态：fence=聚焦单个范围；group=聚焦整个项目
+        let focusState = { fence: null, group: null };
+        let lastOverlayClick = 0;
+
+        // 根据聚焦状态计算单个多边形样式
+        function polyStyle(f, color, mode, isMobile) {
+            const baseFill = isMobile ? 0.10 : 0.16;
+            const baseSW = isMobile ? 1.5 : 2.5;
+            const isLarge = (f.area_m2 || 0) > LARGE_AREA_M2;
+            let fillOpacity, sw, so;
+            if (mode === 'focus') {
+                fillOpacity = 0.45;
+                sw = baseSW + 2;
+                so = 1;
+            } else if (mode === 'dim') {
+                fillOpacity = 0;
+                sw = Math.max(1, baseSW - 1);
+                so = 0.10;
+            } else {
+                fillOpacity = isLarge ? 0 : baseFill;
+                sw = baseSW;
+                so = 1;
+            }
+            return {
+                fillColor: color,
+                fillOpacity: fillOpacity,
+                strokeColor: color,
+                strokeWeight: sw,
+                strokeOpacity: so,
+                strokeStyle: 'solid'
+            };
+        }
+
+        function modeFor(f, groupName) {
+            if (!focusState.fence && !focusState.group) return 'normal';
+            const isThis = focusState.group
+                ? (groupName === focusState.group)
+                : (focusState.fence === f);
+            return isThis ? 'focus' : 'dim';
+        }
+
+        function setFocus(fence, group) {
+            focusState.fence = fence || null;
+            focusState.group = group || null;
+            applyFocusStyles();
+        }
+
+        function clearFocus() {
+            if (!focusState.fence && !focusState.group) return;
+            focusState.fence = null;
+            focusState.group = null;
+            applyFocusStyles();
+            document.querySelectorAll('.filter-item.focused').forEach(el => el.classList.remove('focused'));
+        }
+
+        function applyFocusStyles() {
+            const isMobile = window.innerWidth <= 768;
+            polygonList.forEach(p => {
+                const f = p.__fence, gname = p.__group;
+                if (!f) return;
+                try {
+                    p.setOptions(polyStyle(f, globalNameColors[gname] || '#00d4ff', modeFor(f, gname), isMobile));
+                } catch (e) {}
+            });
+        }
+
         function renderFences(groups, nameColors) {
             clearAllPolygons();
 
             const isMobile = window.innerWidth <= 768;
-            const strokeWeight = isMobile ? 1.5 : 3;
-            const fillOpacity = isMobile ? 0.12 : 0.18;
-
             const bounds = map.getBounds();
 
             Object.entries(groups).forEach(([name, fences]) => {
                 const color = nameColors[name];
-                const r = parseInt(color.slice(1,3), 16);
-                const g = parseInt(color.slice(3,5), 16);
-                const b = parseInt(color.slice(5,7), 16);
 
                 const groupPolygons = [];
                 fences.forEach(f => {
@@ -1690,23 +1761,24 @@
                         }
                     }
 
+                    const isLarge = (f.area_m2 || 0) > LARGE_AREA_M2;
+                    const style = polyStyle(f, color, modeFor(f, name), isMobile);
+
                     // 一个范围可能由多个环组成，逐个绘制
                     rings.forEach(ring => {
                         if (!ring || ring.length < 3) return;
-                        const polygon = new AMap.Polygon({
+                        const polygon = new AMap.Polygon(Object.assign({
                             path: ring,
-                            fillColor: `rgba(${r},${g},${b},${fillOpacity})`,
-                            strokeColor: color,
-                            strokeWeight: strokeWeight,
-                            strokeOpacity: 1.0,
-                            fillOpacity: 0.85,
-                            strokeStyle: 'solid',
                             cursor: 'pointer',
-                            zIndex: 50,
+                            zIndex: isLarge ? 30 : 60,   // 小地块层级更高，不被大范围轮廓盖住
                             extData: f
-                        });
+                        }, style));
+                        polygon.__fence = f;
+                        polygon.__group = name;
 
                         polygon.on('click', () => {
+                            lastOverlayClick = Date.now();
+                            setFocus(f, null);
                             showFenceInfoWindow(f, color);
                         });
 
@@ -1797,6 +1869,32 @@
                     const name = e.target.dataset.filter;
                     filterVisible[name] = e.target.checked;
                     applyFilterVisibility();
+                });
+            });
+
+            // 点击项目名 → 聚焦该项目（其余淡出）并自动缩放至该范围
+            container.querySelectorAll('.filter-item').forEach(item => {
+                const name = item.dataset.name;
+                const nameEl = item.querySelector('.filter-name');
+                if (!nameEl) return;
+                nameEl.style.cursor = 'pointer';
+                nameEl.title = '点击聚焦该项目';
+                nameEl.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const cb = item.querySelector('input[data-filter]');
+                    if (cb && !cb.checked) {
+                        cb.checked = true;
+                        filterVisible[name] = true;
+                        applyFilterVisibility();
+                    }
+                    setFocus(null, name);
+                    const polys = polygonsByName[name];
+                    if (polys && polys.length) {
+                        try { map.setFitView(polys, false, [90, 90, 90, 90]); } catch (err) {}
+                    }
+                    container.querySelectorAll('.filter-item').forEach(el => el.classList.remove('focused'));
+                    item.classList.add('focused');
                 });
             });
         }
@@ -2117,10 +2215,11 @@
         // 初始化事件监听
         // ============================================================
         function initEvents() {
-            // ESC 键关闭 InfoWindow
+            // ESC 键关闭 InfoWindow / 清除聚焦
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     if (fenceInfoWindow) fenceInfoWindow.close();
+                    clearFocus();
                     const dashboard = document.getElementById('dashboard');
                     if (dashboard && dashboard.classList.contains('open')) {
                         dashboard.classList.remove('open');
@@ -2128,6 +2227,12 @@
                         if (toggle) toggle.classList.remove('active');
                     }
                 }
+            });
+
+            // 点击地图空白处清除聚焦（overlay 上的点击通过时间戳过滤）
+            map.on('click', () => {
+                if (Date.now() - lastOverlayClick < 300) return;
+                clearFocus();
             });
 
             document.getElementById('dashboardToggle').addEventListener('click', () => {
